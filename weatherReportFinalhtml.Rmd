@@ -1,9 +1,8 @@
 ---
-title: "Reproducible Research: The effect of Severe Weather on US Weatlh and Health"
-author : "Daniel Pericich"
-output: 
-html_document:
-keep_md: true
+title: 'Reproducible Research: The Effects of Severe Weather on US Wealth and Health'
+author: "Daniel Pericich"
+date: "2/9/2020"
+output: html_document
 ---
 
 Set Global Options
@@ -11,7 +10,7 @@ Set Global Options
 knitr::opts_chunk$set(warning=FALSE, message = FALSE, echo = TRUE)
 ```
 <h1> Synopsis </h1>
-<p> The main goal of this study is determine which severe weather events are most harmful to the public health, and which weather events cause the most economic damage, both in crop and propery damage, to the United States. These two insights will be gleaned by analyzing data from the NOAA Storm Database.
+<p> The main goal of this study is determine which severe weather events are most harmful to the public health, and which weather events cause the most economic damage, both to crops and property , in the United States. These two insights will be gleaned by analyzing data from the NOAA Storm Database.
 
 <h1> Data Processing </h1>
 <p> Before beginning data cleaning and analysis, we will load in the necessary libraries for this project. </p>
@@ -31,7 +30,7 @@ project_fields <- c("EVTYPE", "FATALITIES", "INJURIES", "PROPDMG", "PROPDMGEXP",
 weather_select <- weather_csv[,project_fields]
 ```
 
-<p> Now that we have the data we will need for the rest of the report, we will want to change the values given in PROPDMGEXP and CROPDMGEXP from letters to numbers that we can use to determine the amount of damage done by each record. </p>
+<p> Now that we have the data we will need for the rest of the report, we will want to change the values given in PROPDMGEXP and CROPDMGEXP from letters to numbers that we can use to determine the amount of damage done by each recorded weather event. </p>
 ```{r}
 weather_select$PROPDMGEXP[weather_select$PROPDMGEXP == "H" | weather_select$PROPDMGEXP == "h"] <- 100
 weather_select$PROPDMGEXP[weather_select$PROPDMGEXP == "K" | weather_select$PROPDMGEXP == "k"] <- 1000
@@ -51,7 +50,7 @@ weather_select$Property_Damage <- as.numeric(weather_select$PROPDMG)*as.numeric(
 weather_select$Crop_Damage <- as.numeric(weather_select$CROPDMG)*as.numeric(weather_select$CROPDMGEXP)
 ```
 
-<p> For the final data preprocessing, we will use the aggregrate function with a sum function to gather all the events together and total their crop and property damage. We will store these fields in a new data frame called "group_weather." </p>
+<p> For the final data preprocessing, we will use the aggregrate function with a sum function to gather all the events together and sum their total crop and property damage, respectively. We will store these fields in a new data frame called "group_weather." </p>
 ```{r}
 group_weather <- aggregate(weather_select[, c("FATALITIES", "INJURIES", "Property_Damage", "Crop_Damage")],
                            by = list(weather_select$EVTYPE), "sum")
@@ -75,14 +74,16 @@ health_weather$Weather_Event <- factor(health_weather$Weather_Event, level = hea
 health_plot <- ggplot(data = health_weather, mapping = aes(x = Weather_Event, y = Health)) +
   geom_bar(stat = "identity", fill = "red") + 
   labs(title = "Top 10 Weather Events by Magnitude on Public Health from 1950 and 2011", 
-       x = "Type of Weather Event", Y = "Injuries and Fatalities")
+       x = "Type of Weather Event", Y = "Injuries and Fatalities") +
+    theme(axis.text.x = element_text(angle = 90))
+health_plot
 ```
 
-<p> As you can see from the graph, by far the largest impacter on public health were Tornadoes.</p>
+<p> As you can see from the graph, by far the largest impacter on public health was Tornadoes.</p>
 
 <h3>Weather Events: Crop Impact</h3>
 
-<p> We will next look at weather events by the impact they had crops. To do this, we will again order the weather events by decreasing order and create a new data frame to store our fields in which is named "crop weather." </p>
+<p> We will next look at weather events by the impact they had crops. To do this, we will again order the weather events by decreasing order and create a new data frame to store our fields in which is named "crop_weather." </p>
 
 ```{r}
 crop_weather <- group_weather[order(-group_weather$Crop_Damage),][1:10,]
@@ -95,7 +96,9 @@ crop_weather$Weather_Event <- factor(crop_weather$Weather_Event, level = crop_we
 crop_plot <- ggplot(data = crop_weather, mapping = aes(x = Weather_Event, y = Crop_Damage)) +
   geom_bar(stat = "identity", fill = "yellow") +
   labs(title = "Top 10 Weather Events by Magnitude of Crop Damage from 1950 to 2011", 
-       x = "Type of Weather Event", y = "Damage Done in USD")
+       x = "Type of Weather Event", y = "Damage Done in USD") +
+    theme(axis.text.x = element_text(angle = 90))
+crop_plot
 ```
 
 <p> Again, we have one clear leader in causes of crop damage as drought has caused more than twice the amount of damage as the next closest event. However, the next three events: flood, river flood and ice storm, are higher than the three events that followed tornadoes in effect on public health. </p>
@@ -115,7 +118,8 @@ property_weather$Weather_Event <- factor(property_weather$Weather_Event, level =
 property_plot <- ggplot(data = property_weather, mapping = aes(x = Weather_Event, y = Property_Damage)) +
   geom_bar(stat = "identity", fill = "green") +
   labs(title = "Top 10 Weather Events by Magnitude of Property Damage form 1950 to 2011",
-       x = "Type of Weather Event", y = "Damage Done in USD")
+       x = "Type of Weather Event", y = "Damage Done in USD") +
+    theme(axis.text.x = element_text(angle = 90))
 property_plot
 ```
 
